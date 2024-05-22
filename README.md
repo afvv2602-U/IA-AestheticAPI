@@ -45,3 +45,14 @@ Este comando generará dos archivos: key.pem (clave privada) y cert.pem (certifi
 
 - curl -X POST -F "file=@/path/to/your/image.jpg" -H "x-api-key: your_generated_api_key_here" https://0.0.0.0:5000/predict --insecure
 
+
+## Activar servidor WSGI
+
+- gunicorn --bind 0.0.0.0:10900 \
+  --certfile=/etc/letsencrypt/live/aesthetica.myvnc.com/fullchain.pem \
+  --keyfile=/etc/letsencrypt/live/aesthetica.myvnc.com/privkey.pem \
+  --timeout 120 \
+  --workers 4 \
+  --log-level debug \
+  --log-file /home/randy/Documents/API/gunicorn.log \
+  wsgi:app

@@ -1,4 +1,4 @@
 torch
 torchvision
 flask
-flask-cors
+gunicorn
