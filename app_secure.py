@@ -1,14 +1,21 @@
 from flask import Flask, request, jsonify, abort, render_template
 import torch
-import torch.nn as nn
 import torchvision.transforms as transforms
 from PIL import Image
 import io
 import ssl
 from config import Config
+from flask_cors import CORS  
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
+CORS(app)
+
+# Rutas certificados
+CERT_PATH = "/etc/letsencrypt/live/aesthetica.myvnc.com/fullchain.pem"
+KEY_PATH = "/etc/letsencrypt/live/aesthetica.myvnc.com/privkey.pem"
 
 # Decorador para requerir API Key
 def require_api_key(f):
@@ -72,6 +79,6 @@ def internal_server_error(error):
     return jsonify({'error': 'An internal error occurred'}), 500
 
 if __name__ == '__main__':
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+    context.load_cert_chain(certfile=CERT_PATH, keyfile=KEY_PATH)
     app.run(host='0.0.0.0', port=10900, ssl_context=context)
