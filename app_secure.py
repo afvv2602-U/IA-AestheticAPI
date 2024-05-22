@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, render_template
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
@@ -19,7 +19,7 @@ def require_api_key(f):
     return decorated_function
 
 # Ruta al modelo
-model_path = 'Model/complete_model.pth'
+model_path = 'path/to/your/model/complete_model.pth'
 
 # Cargar el modelo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -35,6 +35,10 @@ transform = transforms.Compose([
 ])
 
 class_names = ['Barroco', 'Cubismo', 'Expresionismo', 'Impresionismo', 'Realismo', 'Renacimiento', 'Rococo', 'Romanticismo']
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 @require_api_key
@@ -70,4 +74,4 @@ def internal_server_error(error):
 if __name__ == '__main__':
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
-    app.run(host='0.0.0.0', port=5000, ssl_context=context)
+    app.run(host='0.0.0.0', port=10900, ssl_context=context)
