@@ -1,11 +1,34 @@
 from flask import Flask, request, jsonify, render_template_string
 from werkzeug.exceptions import HTTPException
 import ssl
-
+import torch
+import torch.nn as nn
+import torchvision.transforms as transforms
+from PIL import Image
 app = Flask(__name__)
 
 # Define una clave API segura
 API_KEY = "IRfzQeWjngxQWyfVP0xa-Ee4f5WPtJtZ_XeBLuu8-PE"
+
+# Ruta al modelo
+model_path = 'path/to/your/model/complete_model.pth'
+
+# Cargar el modelo
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = torch.load(model_path)
+model.to(device)
+model.eval()
+
+
+# Transformaciones para la imagen
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
+
+class_names = ['Barroco', 'Cubismo', 'Expresionismo', 'Impresionismo', 'Realismo', 'Renacimiento', 'Rococo', 'Romanticismo']
+
 
 # Página de inicio
 @app.route('/')
@@ -25,16 +48,25 @@ def require_api_key(func):
 @require_api_key
 def predict():
     if 'file' not in request.files:
-        return jsonify({"error": "No file provided"}), 400
+        return jsonify({'error': 'No file provided'}), 400
 
     file = request.files['file']
-
     if file.filename == '':
-        return jsonify({"error": "No file provided"}), 400
+        return jsonify({'error': 'No file provided'}), 400
 
-    # Aquí iría tu lógica de predicción con el modelo
+    try:
+        img = Image.open(io.BytesIO(file.read()))
+        img = transform(img).unsqueeze(0).to(device)
 
-    return jsonify({"result": "prediction result"})
+        with torch.no_grad():
+            outputs = model(img)
+            _, predicted = torch.max(outputs, 1)
+            class_name = class_names[predicted.item()]
+
+        return jsonify({'class_name': class_name}), 200
+    except Exception as e:
+        return jsonify({'error': 'An error occurred'}), 500
+
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -45,6 +77,7 @@ def handle_exception(e):
     if isinstance(e, HTTPException):
         response["code"] = e.code
     return jsonify(response), 500
+
 
 if __name__ == '__main__':
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
