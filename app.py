@@ -11,7 +11,7 @@ app = Flask(__name__)
 API_KEY = "IRfzQeWjngxQWyfVP0xa-Ee4f5WPtJtZ_XeBLuu8-PE"
 
 # Ruta al modelo
-model_path = 'path/to/your/model/complete_model.pth'
+model_path = 'model/complete_model.pth'
 
 # Cargar el modelo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
