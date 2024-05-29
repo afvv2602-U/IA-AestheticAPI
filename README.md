@@ -43,7 +43,9 @@ Este comando generará dos archivos: key.pem (clave privada) y cert.pem (certifi
 
 ## Uso version de la API Securizada
 
-- curl -X POST -F "file=@/path/to/your/image.jpg" -H "x-api-key: your_generated_api_key_here" https://0.0.0.0:5000/predict --insecure
+- curl -X POST https://aesthetica.myvnc.com:10900/predict \
+  -H "x-api-key: IRfzQeWjngxQWyfVP0xa-Ee4f5WPtJtZ_XeBLuu8-PE" \
+  -F "file=@/path/to/your/image.jpg" -k
 
 
 ## Activar servidor WSGI

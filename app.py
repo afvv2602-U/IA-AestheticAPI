@@ -1,3 +1,4 @@
+import io
 from flask import Flask, request, jsonify, render_template_string
 from werkzeug.exceptions import HTTPException
 import ssl
@@ -5,22 +6,22 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 from PIL import Image
+
 app = Flask(__name__)
 
-# Define una clave API segura
+# Define a secure API key
 API_KEY = "IRfzQeWjngxQWyfVP0xa-Ee4f5WPtJtZ_XeBLuu8-PE"
 
-# Ruta al modelo
+# Path to the model
 model_path = 'model/complete_model.pth'
 
-# Cargar el modelo
+# Load the model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = torch.load(model_path)
+model = torch.load(model_path, map_location=device)
 model.to(device)
 model.eval()
 
-
-# Transformaciones para la imagen
+# Transformations for the image
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -29,13 +30,12 @@ transform = transforms.Compose([
 
 class_names = ['Barroco', 'Cubismo', 'Expresionismo', 'Impresionismo', 'Realismo', 'Renacimiento', 'Rococo', 'Romanticismo']
 
-
-# Página de inicio
+# Home page
 @app.route('/')
 def home():
-    return render_template_string("<h1>Esta es la API de Aesthetica</h1>")
+    return render_template_string("<h1>This is the Aesthetica API</h1>")
 
-# Autenticación con API Key
+# API key authentication
 def require_api_key(func):
     def decorated_function(*args, **kwargs):
         if request.headers.get('x-api-key') and request.headers.get('x-api-key') == API_KEY:
@@ -65,8 +65,8 @@ def predict():
 
         return jsonify({'class_name': class_name}), 200
     except Exception as e:
+        print(f"Error during prediction: {e}")
         return jsonify({'error': 'An error occurred'}), 500
-
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -77,7 +77,6 @@ def handle_exception(e):
     if isinstance(e, HTTPException):
         response["code"] = e.code
     return jsonify(response), 500
-
 
 if __name__ == '__main__':
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
